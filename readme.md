@@ -8,5 +8,6 @@
   - To create a virtual env first install "pip install virtualenv"
   - After that run virtualenv *envname*
   - To activate the env write the following command in the cmd prompt *envname/Scripts/activate*. (**if cmd doesn't work just change the slash instead of forward use backward slash**)
+  - if error occurs at the time of activating env just set execution policy in windows powershell *Set-ExecutionPolicy Unrestricted -Scope CurrentUser*
   - once you enter the env install flask using *pip install flask* cmd.
   - Once installation done just run app.py using *python app.py* cmd.
