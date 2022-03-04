@@ -9,6 +9,8 @@ mongo = PyMongo(app)
 
 @app.route("/")
 def index():
+    data5 = mongo.db.dead_data.find()
+    data4 = mongo.db.hospital_data.find()
     data = mongo.db.Daily_ADRS_count.find().sort("date")
     data1 = mongo.db.gender_distribution_data.find()
     data2 = mongo.db.adrs_distribution.find()
@@ -16,6 +18,18 @@ def index():
     count = 0
     symptoms_label = []
     symptoms_percentage = []
+    status_hospital = []
+    status_hospital_percentage = []
+    status_dead = []
+    status_dead_percentage = []
+    for x in data5:
+        status_dead.append(x["Status"])
+        status_dead_percentage.append(x["Values_in_percentage"])
+
+
+    for x in data4 :
+        status_hospital.append(x["Status"])
+        status_hospital_percentage.append(x["Values_in_percentage"])
     for x in data3:
         if count == 10:
             break
@@ -30,7 +44,6 @@ def index():
     date = []
     count = []
     for x in data2:
-        print(x)
         adrs.append(x["label"])
         count_adrs.append(x["data"])
     for x in data1:
@@ -40,7 +53,10 @@ def index():
         date.append(x["date"])
         count.append(x["count"])
     return render_template("index.html",
-                           date=date, count=count, gender_label=gender_label, gender_percentage=gender_percentage, adrs=adrs, count_adrs=count_adrs, symptoms_label=symptoms_label, symptoms_percentage=symptoms_percentage)
+                           date=date, count=count, gender_label=gender_label, gender_percentage=gender_percentage, adrs=adrs, count_adrs=count_adrs, 
+                           symptoms_label=symptoms_label, symptoms_percentage=symptoms_percentage,
+                           status_dead=status_dead, status_dead_percentage=status_dead_percentage,
+                           status_hospital=status_hospital, status_hospital_percentage=status_hospital_percentage)
 
 
 @app.route("/profile")
@@ -68,6 +84,23 @@ def submit():
     ER = request.form.get("ER")
     vaccine_type = request.form.get("vaccine_type")
     vaccine_name = request.form.get("vaccine_name")
+    mongo.db.user_data.insert_one(
+        {
+            "age":age,
+            "gender":gender,
+            "DOV":DOV,
+            "DOR":DOR,
+            "symptoms":symptoms,
+            "medical_history":medical_history,
+            "current_illness":curr_ill,
+            "other_meds":oth_med,
+            "died":died,
+            "hospitalized":hospitalized,
+            "ER":ER,
+            "vaccine_type":vaccine_type,
+            "vaccine_name":vaccine_name
+        }
+    )
     print("---------- ", age, gender, DOV, DOR, curr_ill, "medical: ",
           medical_history, " ..", vaccine_name, hospitalized, died, " --------------")
     return render_template("submit.html")
