@@ -7,10 +7,6 @@ mongo = PyMongo(app)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
-
-@app.route("/test_data")
-def home():
     data = mongo.db.Daily_ADRS_count.find().sort("date")
     data1 = mongo.db.gender_distribution_data.find()
     data2 = mongo.db.adrs_distribution.find()
