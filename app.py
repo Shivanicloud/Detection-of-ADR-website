@@ -2,9 +2,32 @@
 from flask import Flask, render_template, request
 from jinja2 import Environment, PackageLoader, select_autoescape
 from flask_pymongo import PyMongo
+import joblib
+import string
+import nltk
+from sklearn.feature_extraction.text import TfidfVectorizer,TfidfTransformer
+from nltk.corpus import stopwords
 app = Flask(__name__, static_url_path='/static')
 app.config["MONGO_URI"] = "mongodb://localhost:27017/VAERS_Data"
 mongo = PyMongo(app)
+loaded_rf = joblib.load("random_forest.joblib")
+loaded_tfidf_vect=joblib.load("tfidf_vect.joblib")
+nltk.download('stopwords')
+
+def preprocessing(text):
+    stop = stopwords.words('english')
+    string.punctuation
+    clean_txt = "".join([i for i in text if i not in string.punctuation])
+    clean_txt = clean_txt.lower()
+    clean_txt = clean_txt.replace('\d+', '')
+    l = clean_txt.split(" ")
+    final = []
+    f = " "
+    for word in l:
+        if word not in (stop):
+            final.append(word)
+    clean_txt = f.join(final)
+    return clean_txt
 
 
 @app.route("/")
@@ -64,6 +87,7 @@ def profile():
     return render_template("profile.html")
 
 
+
 @app.route("/form")
 def form():
     return render_template("ADR_form.html")
@@ -71,6 +95,8 @@ def form():
 
 @app.route("/submit", methods=["POST"])
 def submit():
+    loaded_rf = joblib.load("random_forest.joblib")
+    loaded_tfidf_vect=joblib.load("tfidf_vect.joblib")
     age = request.form.get("age")
     gender = request.form.get("gender")
     DOV = request.form.get("dov")
@@ -84,6 +110,10 @@ def submit():
     ER = request.form.get("ER")
     vaccine_type = request.form.get("vaccine_type")
     vaccine_name = request.form.get("vaccine_name")
+    input_text = preprocessing(symptoms)
+    transformer = TfidfTransformer()
+    text_tfidf =  transformer.fit_transform(loaded_tfidf_vect.transform([input_text]))
+    s=loaded_rf.predict(text_tfidf)
     mongo.db.user_data.insert_one(
         {
             "age":age,
@@ -98,12 +128,15 @@ def submit():
             "hospitalized":hospitalized,
             "ER":ER,
             "vaccine_type":vaccine_type,
-            "vaccine_name":vaccine_name
+            "vaccine_name":vaccine_name,
+            "predict": int(s[0])
         }
     )
-    print("---------- ", age, gender, DOV, DOR, curr_ill, "medical: ",
-          medical_history, " ..", vaccine_name, hospitalized, died, " --------------")
-    return render_template("submit.html")
+    return render_template("submit.html",s=int(s[0]),vaccine_name=vaccine_name,
+    ER=ER,hospitalized=hospitalized,died=died,oth_med=oth_med,
+    curr_ill=curr_ill,medical_history=medical_history,
+    symptoms=symptoms,DOR=DOR,DOV=DOV,age=age,gender=gender,vaccine_type=vaccine_type
+    )
 
 
 if __name__ == '__main__':
