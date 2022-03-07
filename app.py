@@ -132,7 +132,11 @@ def submit():
             "predict": int(s[0])
         }
     )
-    return render_template("submit.html",s=s)
+    return render_template("submit.html",s=int(s[0]),vaccine_name=vaccine_name,
+    ER=ER,hospitalized=hospitalized,died=died,oth_med=oth_med,
+    curr_ill=curr_ill,medical_history=medical_history,
+    symptoms=symptoms,DOR=DOR,DOV=DOV,age=age,gender=gender,vaccine_type=vaccine_type
+    )
 
 
 if __name__ == '__main__':
