@@ -87,6 +87,36 @@ def profile():
     return render_template("profile.html")
 
 
+@app.route("/pfizer")
+def pfizer():
+    data1 = mongo.db.pfizer_data.find()
+    label = []
+    label_percentage = []
+    for x in data1:
+        label.append(x["label"])
+        label_percentage.append(x["count_percentage"])
+    return render_template("pfizer_data.html",label=label,label_percentage=label_percentage)
+
+@app.route("/moderna")
+def moderna():
+    data1 = mongo.db.moderna_data.find()
+    label = []
+    label_percentage = []
+    for x in data1:
+        label.append(x["label"])
+        label_percentage.append(x["count_percentage"])
+    return render_template("moderna_data.html",label=label,label_percentage=label_percentage)
+
+@app.route("/janssen")
+def janssen():
+    data1 = mongo.db.janssen_data.find()
+    label = []
+    label_percentage = []
+    for x in data1:
+        label.append(x["label"])
+        label_percentage.append(x["count_percentage"])
+    return render_template("janssen_data.html",label=label,label_percentage=label_percentage)
+
 
 @app.route("/form")
 def form():
