@@ -4,6 +4,9 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from flask_pymongo import PyMongo
 import joblib
 import string
+import dill
+import lime 
+import lime.lime_tabular
 import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer,TfidfTransformer
 from nltk.corpus import stopwords
@@ -162,10 +165,22 @@ def submit():
             "predict": int(s[0])
         }
     )
+    loaded_rf = joblib.load("random_forest.joblib")
+    loaded_tfidf_vect=joblib.load("tfidf_vect.joblib")
+    text = []
+    text.append(symptoms)
+    print(text)
+    transformer = TfidfTransformer()
+    text_tfidf =  transformer.fit_transform(loaded_tfidf_vect.transform(text))
+    predict_fn_rf = lambda x: loaded_rf.predict_proba(x).astype(float)
+
+    with open('data', 'rb') as f:
+        foo = dill.load(f)
+        res=foo.explain_instance(text_tfidf, predict_fn_rf,num_features=10)
     return render_template("submit.html",s=int(s[0]),vaccine_name=vaccine_name,
     ER=ER,hospitalized=hospitalized,died=died,oth_med=oth_med,
     curr_ill=curr_ill,medical_history=medical_history,
-    symptoms=symptoms,DOR=DOR,DOV=DOV,age=age,gender=gender,vaccine_type=vaccine_type
+    symptoms=symptoms,DOR=DOR,DOV=DOV,age=age,gender=gender,vaccine_type=vaccine_type,x=res.as_html()
     )
 
 
